@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>宫斗生存测试</title>
+<style>
+  :root{
+    --bg:#2B2620; --card:#F4EFE6; --line:#D9CFBC;
+    --ink:#332E26; --sub:#7E7461; --muted:#A89C86;
+    --brand:#8A6F4E; --brand-2:#B5835A; --ok:#5E7A63; --die:#9C4A3E; --gold:#C9A86A;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);overflow-x:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Songti SC","Microsoft YaHei",serif;
+    line-height:1.85;display:flex;justify-content:center;-webkit-font-smoothing:antialiased;}
+  .wrap{width:100%;max-width:480px;min-height:100vh;padding:20px 18px 36px;display:flex;flex-direction:column;}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;color:#E8DECB;}
+  .top .name{font-size:13px;letter-spacing:2px;color:var(--gold);white-space:nowrap;}
+  .dots{display:flex;gap:5px;margin-bottom:9px;} .dots i{width:7px;height:7px;border-radius:50%;background:#5A5042;}
+  .dots i.on{background:var(--gold);}
+  .meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+  .ep{font-size:11px;color:#C9BCA2;background:#3A3329;border:1px solid #4A4135;padding:3px 9px;border-radius:14px;}
+  .rank{font-size:11px;color:var(--gold);background:#332D24;border:1px solid #4A4135;padding:3px 9px;border-radius:14px;}
+  .toast{position:fixed;top:16%;left:50%;transform:translateX(-50%);background:#332D24;border:1px solid var(--gold);
+    color:var(--gold);padding:9px 24px;border-radius:20px;letter-spacing:3px;font-size:14px;z-index:99;
+    pointer-events:none;opacity:0;animation:tst 1.9s ease forwards;}
+  @keyframes tst{0%{opacity:0;transform:translate(-50%,-8px);}15%{opacity:1;transform:translate(-50%,0);}
+    80%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,0);}}
+  .bar{height:3px;background:#3A3329;border-radius:2px;overflow:hidden;margin-bottom:16px;}
+  .bar>i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s ease;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;}
+  .where{font-size:11px;color:var(--brand-2);letter-spacing:1px;margin-bottom:8px;}
+  .story{font-size:15px;color:var(--ink);margin:0;}
+
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;padding:13px 15px;margin-bottom:10px;font-size:14.5px;color:var(--ink);
+    cursor:pointer;transition:border-color .15s,background .15s;line-height:1.55;}
+  .opt:active{background:#EDE6D8;} .opt:hover{border-color:var(--brand);}
+
+  .chapter{text-align:center;padding:26px 18px;}
+  .chapter .vol{font-size:12px;letter-spacing:4px;color:var(--brand-2);margin-bottom:10px;}
+  .chapter h2{font-size:23px;font-weight:800;letter-spacing:3px;margin:0 0 16px;color:var(--ink);}
+  .chapter .ci{font-size:14px;color:var(--sub);text-align:left;margin:0 0 20px;line-height:1.9;}
+  .chapter .go{width:100%;border:0;border-radius:10px;padding:13px;background:var(--brand);color:#FBF6EC;
+    font-size:15px;letter-spacing:2px;cursor:pointer;} .chapter .go:active{background:#755C3E;}
+
+  .cover{text-align:center;padding:30px 16px 18px;color:#EADFC9;}
+  .cover .seal{font-size:12px;letter-spacing:6px;color:var(--gold);margin-bottom:14px;}
+  .cover h1{font-size:27px;font-weight:800;letter-spacing:2px;color:#F3E7CF;margin:0 0 12px;line-height:1.4;}
+  .cover .lead{font-size:14px;color:#C9BCA2;margin-bottom:22px;line-height:1.9;}
+  .cover .rule{font-size:12.5px;color:#B6A98F;background:#332D24;border:1px solid #473E30;border-radius:10px;
+    padding:14px;text-align:left;margin-bottom:22px;line-height:1.85;}
+  .start{width:100%;border:0;border-radius:10px;padding:14px;background:var(--gold);color:#2B2620;
+    font-size:16px;font-weight:700;letter-spacing:3px;cursor:pointer;} .start:active{background:#B8975A;}
+
+  .end{text-align:center;padding-top:18px;}
+  .end .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:2px;padding:5px 14px;
+    border-radius:18px;margin-bottom:14px;}
+  .end.die .tag{background:#3A2824;color:#E0A99C;border:1px solid #5A3A33;}
+  .end.life .tag{background:#26332A;color:#A9CBB0;border:1px solid #3A5042;}
+  .end .big{font-size:23px;font-weight:800;margin:4px 0 6px;letter-spacing:1px;}
+  .end.die .big{color:#E0A99C;} .end.life .big{color:#BFE0C4;}
+  .end .reason{font-size:14.5px;background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:16px;text-align:left;margin:14px 0 18px;line-height:1.9;}
+  .end .share{font-size:12.5px;color:#B6A98F;margin-bottom:18px;}
+  .again{width:100%;border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:10px;
+    padding:12px;font-size:14px;letter-spacing:2px;cursor:pointer;margin-bottom:10px;} .again:active{background:#332D24;}
+  .rech{width:100%;border:1px solid #5A5042;background:transparent;color:#C9BCA2;border-radius:10px;
+    padding:11px;font-size:13px;letter-spacing:1px;cursor:pointer;} .rech:active{background:#332D24;}
+
+  .foot{margin-top:auto;padding:20px 0 max(20px,env(safe-area-inset-bottom));font-size:10.5px;color:#7E735F;text-align:center;letter-spacing:.5px;}
+  .hide{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="top"><div class="name">后宫生存录</div>
+    <div class="meta"><div class="ep" id="ep">第 0 步</div><div class="rank" id="rank">位分：秀女</div></div></div>
+  <div class="dots" id="dots"></div>
+  <div class="bar"><i id="bar"></i></div>
+
+  <section id="cover" class="cover">
+    <div class="seal">宫 斗 · 分 支</div>
+    <h1>你在宫斗里<br>能活几集</h1>
+    <div class="lead">朱墙深深，一步生死。<br>五十幕，幕幕皆局；<br>从秀女到皇贵妃，每条路通向不同的命数。</div>
+    <div class="rule">📜 你是新入宫的秀女。故事分四卷：<b>入宫 · 承宠 · 暗涌 · 凤位</b>。位分从秀女一路爬到皇贵妃，每升一级都要多过几关。每个选择都会<b>岔路</b>——有的通向不同结局，有的当场领盒饭。共 13 种结局。含「重新入宫」与「从本卷重来」。</div>
+    <button class="start" id="startBtn">入 宫</button>
+  </section>
+
+  <section id="chapter" class="hide chapter">
+    <div class="vol" id="cVol"></div><h2 id="cTitle"></h2>
+    <p class="ci" id="cIntro"></p><button class="go" id="cGo">续 卷</button>
+  </section>
+
+  <section id="scene" class="hide">
+    <div class="card"><div class="where" id="where"></div><p class="story" id="story"></p></div>
+    <div id="opts"></div>
+  </section>
+
+  <section id="end" class="hide end">
+    <span class="tag" id="endTag"></span><div class="big" id="endBig"></div>
+    <div class="reason" id="endReason"></div><div class="share" id="endShare"></div>
+    <button class="again" id="againBtn">↻ 重新入宫</button>
+    <button class="rech" id="rechBtn">从本卷重来</button>
+  </section>
+
+  <div class="foot">本作纯属虚构的娱乐向趣味测评，宫廷情节均非史实，不构成任何预言或建议。</div>
+</div>
+
+<script>
+const VOLS=[null,["卷 一","入 宫","三月选秀，车马入京。你以秀女之身踏入朱红高墙，先在储秀宫学规矩、待殿选。殿选落了单，便先做宫女；哪天皇上多看你一眼，才算真正入了这局。宫门在身后沉沉合上——这一局，已然开局。"],
+ ["卷 二","承 宠","你竟入了皇上眼，从常在晋了贵人、嫔。恩宠是蜜，也是毒。承宠之路，每一步都踩在他人妒火上，要学会在宠与不宠之间，活成一道影子。"],
+ ["卷 三","暗 涌","靖妃倒台，你晋了妃、贵妃。风浪最急时，离高位越近，越容不得半分行差踏错。这一卷，要在刀尖上保住自己与皇子。"],
+ ["卷 四","凤 位","你已是贵极的皇贵妃。宿敌尽除，只待凤位。最后一卷，定你全剧终的结局——是太后，是陪葬的宠妃，还是抽身而去。"]];
+
+const NODES={
+ // ===== 卷一 入宫·秀女待选→宫女→常在（n1–n16）=====
+ n1:{v:1,where:"昼 · 储秀宫",story:"教引的周姑姑立在阶前，冷眼扫过一众新到的秀女：「这宫里，嘴比脸要紧。」训完规矩，她点名问你可有话说——你昨夜才到，包袱里还塞着娘缝的家书。",
+  o:[{t:"垂首：「秀女初来，还请姑姑多提点。」",go:"n2"},{t:"回道：「秀女家中老母年迈，若蒙恩典，必当尽孝报皇恩。」",end:"E_JING"},{t:"「我是来选妃的，不是来学规矩的。」",end:"E_JING"}]},
+ n2:{v:1,where:"夜 · 秀女下处",story:"同屋的秀女芸儿鬼祟翻你的包袱，被你撞个正着——她正偷看娘缝给你的家书。她讪讪地笑：「姐姐……别声张。」你心里却记下了这个人。",
+  o:[{t:"不动声色，把家书另塞进贴身衣襟",go:"n3"},{t:"大方把家书摊开：「既是同屋，姐姐要看便看。」",end:"E_BAILE"},{t:"笑着凑近：「妹妹也替我瞧瞧，娘字丑不丑。」",end:"E_LAKE"}]},
+ n3:{v:1,where:"夜 · 储秀宫",story:"周姑姑忽然考你：「若两位娘娘争执起来，你帮谁？」满室静得能听见烛花爆响——你想起娘信上写的「少出头，多低头」。",
+  o:[{t:"「秀女不敢妄言，只守规矩听吩咐。」",go:"n4"},{t:"「依着道理，谁有理便站谁。」",end:"E_BAILE"},{t:"「我帮待我好的那位。」",end:"E_BAILE"}]},
+ n4:{v:1,r:"宫女",where:"晨 · 翊坤宫",story:"殿选那日，皇上的目光从你身上扫过，没有停——你落了单。所幸太后见你识字，指去翊坤宫靖妃名下做个粗使宫女。今晨你失手碎了她心爱的羊脂玉盏，瓷片溅了一地。",
+  o:[{t:"跪下领罚，主动请二十板子",go:"n5"},{t:"说是风大，盏本就摆得不稳",end:"E_JING"},{t:"悄悄找相熟的姐姐替你周旋说情",end:"E_BAILE"}]},
+ n5:{v:1,where:"晨 · 翊坤宫",story:"靖妃斜倚榻上，目光还落在你碎的那只玉盏缺角上，忽然问：「若本宫与皇上之间，你站哪边？」满室皆静，只等你的话。",
+  o:[{t:"「奴婢是主子的人，自然随主子。」",go:"n6"},{t:"「主子与皇上原是一体，分什么哪边。」",end:"E_BAILE"},{t:"「奴婢只知尽本分，不敢论高低。」",end:"E_BAILE"}]},
+ n6:{v:1,where:"昼 · 庭中",story:"你被派去扫洒主道，臀上板痕还隐隐作痛——前日碎盏领的罚还没消。风大尘扬，恰逢靖妃仪仗经过，你险些撞上去。",
+  o:[{t:"忍痛退到一旁，低头把道扫净",go:"n7"},{t:"抢上前说：「奴婢给您清道。」",end:"E_BAILE"},{t:"怕冲撞，转身绕去西廊先扫别处",end:"E_BAILE"}]},
+ n7:{v:1,where:"夜 · 下处",story:"管事克了你的月例，同屋的宫女都装没看见。你摸着空空的袖袋，想起初入宫时同屋的芸儿——怕是早已出宫去了，唯独你还在这高墙里熬着。",
+  o:[{t:"隐忍，只当攒人情",go:"n8"},{t:"去找周姑姑评理",end:"E_BAILE"},{t:"听老人说西角门夜里换防松，动了逃宫的念头",end:"E_TAO"}]},
+ n8:{v:1,where:"午 · 御膳房",story:"你帮膳房送点心，远远见皇上用过膳出来。他的目光在你脸上停了一瞬，随侍太监瞥了你一眼——你想起娘信上那句「露头便招风」，垂首退开。",
+  o:[{t:"垂首退到廊后",go:"n9"},{t:"依礼福身，目不斜视地退下",end:"E_BAILE"},{t:"多看了皇上一眼，想记下他的模样",end:"E_BAILE"}]},
+ n9:{v:1,where:"廊下 · 玉嫔",story:"廊下遇玉嫔，她笑吟吟拦你：「新来的妹妹，倒有几分颜色。」话里藏着打量——你记起周姑姑的话，宫里最会笑的，往往最毒。",
+  o:[{t:"福身退后半步：「娘娘谬赞。」",go:"n10"},{t:"含笑不语，快步离去",end:"E_BAILE"},{t:"抢白：「比不得娘娘万分之一。」",end:"E_LAKE"}]},
+ n10:{v:1,r:"答应",where:"暮 · 翊坤宫",story:"御膳房外那一眼，皇上竟记下了你。旨意忽降：破格纳你——封了答应。宫女一步登天，靖妃捏着茶盏的手紧了紧，一起当差的宫女们红了眼。",
+  o:[{t:"谢恩，依旧谨慎",go:"n11"},{t:"谦退：「是皇上抬爱。」",end:"E_BAILE"},{t:"含笑受了，末了谢过靖妃往日的「照拂」",end:"E_BAILE"}]},
+ n11:{v:1,where:"夜 · 翊坤宫",story:"你虽封了答应，仍住在翊坤宫偏殿，受靖妃辖制。她记着你碎盏的过，又忌你得了圣眷，茶温差了一分便摔了杯。",
+  o:[{t:"机敏，先试温再奉上",go:"n12"},{t:"本分，照规矩来",end:"E_BAILE"},{t:"先尝一口，再奉上说「奴婢试过，温的」",end:"E_BAILE"}]},
+ n12:{v:1,where:"月 · 靖妃寿宴",story:"靖妃寿宴，你张罗席面，眼角却瞥见玉嫔在席尾盯着你笑。贵人们挑剔，有一道羹偏咸了些。",
+  o:[{t:"妥当，悄悄换了一道",go:"n13"},{t:"出彩，亲自献了一支舞",end:"E_BAILE"},{t:"如实禀了膳房，请贵人们慢用",end:"E_JING"}]},
+ n13:{v:1,r:"常在",where:"昼 · 翊坤宫",story:"靖妃准你晋了常在。你第一次有了自己的小匣子，匣底还压着娘缝的那封家书。",
+  o:[{t:"谢恩，依旧本分",go:"n14"},{t:"谦：「是主子恩典。」",end:"E_BAILE"},{t:"骄，慢待起旧日姐妹",end:"E_BAILE"}]},
+ n14:{v:1,where:"昼 · 本宫",story:"你初理本宫事务，分派下人洒扫。有人阳奉阴违——你认出正是当年克你月例的那个管事，索性先记下了他的名字。",
+  o:[{t:"稳，先把人名记下",go:"n15"},{t:"私下敲打那管事一句，立立威",end:"E_BAILE"},{t:"当着众人面，把旧账一并算清",end:"E_BAILE"}]},
+ n15:{v:1,where:"夜 · 长信宫",story:"封了答应后，皇上偶尔召你到长信宫说话。你想起周姑姑教的「不卑不亢」，一字一句都稳。消息却悄悄传到了靖妃耳里。",
+  o:[{t:"得体，不卑不亢",go:"n16"},{t:"温言软语，顺着皇上话头应",end:"E_BAILE"},{t:"趁皇上高兴，替娘家讨个恩典",end:"E_BAILE"}]},
+ n16:{v:1,where:"夜 · 宫宴",story:"宫宴上你被点名献艺，其实你五音不全。满座皆静，看你如何下台——你想起碎盏那日领的板子，知道这一关也得稳稳接住。",
+  o:[{t:"从容献一段擅长的琴",go:"n17"},{t:"称病告退，荐人代你",end:"E_BAILE"},{t:"硬着头皮唱破音",end:"E_BAILE"}]},
+
+ // ===== 卷二 承宠·贵人→嫔（n17–n30）=====
+ n17:{v:2,where:"昼 · 御花园",story:"随驾游园，皇上破天荒回头望你，目光在她人身上掠过，却在你脸上停了一瞬。你垂下眼，想起廊下玉嫔那句「倒有几分颜色」——有人已开始盯着你了。",
+  o:[{t:"垂首，不露分毫贪恋",go:"n18"},{t:"落落一礼，神色如常",end:"E_BAILE"},{t:"故意跌撞往他跟前凑",end:"E_LAKE"}]},
+ n18:{v:2,where:"夜 · 椒房",story:"你被召去侍寝。烛火暖融，皇上闲问：「后宫之中，你最怕什么？」你脑中浮起娘信上的字，和碎盏领罚的那二十板子。",
+  o:[{t:"「怕辜负皇上的恩，怕这宫里的人心。」",go:"n19"},{t:"「怕一个人，太冷清。」",end:"E_BAILE"},{t:"「怕姐姐们害我，不如先下手为强。」",end:"E_BAILE"}]},
+ n19:{v:2,r:"贵人",where:"夜 · 寝宫",story:"太医诊出你有了龙胎。恩宠，也是催命符——靖妃容不得一个既得宠、又早碎过她心爱玉盏的低人有了皇嗣。",
+  o:[{t:"秘而不宣，暗中请心腹太医稳胎",go:"n20"},{t:"只报与皇上，绝不声张",end:"E_BAILE"},{t:"大张旗鼓遍请贺礼",end:"E_LOST"}]},
+ n20:{v:2,where:"午 · 凉亭",story:"玉嫔亲手递来一块桂花糕：「新妹妹，尝尝。」你认得她席尾那抹笑，也认出那是靖妃最忌的甜味——分明是接着寿宴那桩来的试探。",
+  o:[{t:"接下却转手喂了池鱼",go:"n21"},{t:"谢过，称身子不爽利不敢领",end:"E_BAILE"},{t:"掰一半递回玉嫔：「姐姐也尝尝。」",end:"E_POISON"}]},
+ n21:{v:2,r:"嫔",where:"夜 · 耳房",story:"宫里忽起流言，说你「巫蛊诅咒主子」。风声是玉嫔那边放出来的——你想起她递糕、寿宴尾那笑，脊背发凉。",
+  o:[{t:"暗中查出造谣者，连证据一并呈上",go:"n22"},{t:"闭门不出，静待水落石出",end:"E_BAILE"},{t:"心慌之下也去求神拜佛作法",end:"E_BAILE"}]},
+ n22:{v:2,where:"昼 · 慈宁宫",story:"太后屏退左右，淡淡问：「你可知这宫里，活到最后的是哪种人？」你想起周姑姑、想起娘的信，缓缓答了。",
+  o:[{t:"「是心中有数、面上无争的人。」",go:"n23"},{t:"「是皇上信得过的人。」",end:"E_BAILE"},{t:"「是手段最狠的人。」",end:"E_LENGGONG"}]},
+ n23:{v:2,where:"昼 · 本宫",story:"你晋嫔的考核到了。主事姑姑盯着你的一举一动——正是当年教你规矩的周姑姑一脉，早年那些「少出头」的底子，此刻都成了你的护身符。",
+  o:[{t:"妥帖，滴水不漏",go:"n24"},{t:"平常心，不出错",end:"E_BAILE"},{t:"出错，礼数疏漏被记了一笔",end:"E_BAILE"}]},
+ n24:{v:2,where:"暮 · 翊坤宫",story:"靖妃「赏」你一壶西域香茶，笑说养颜，却盯着你：「还不谢恩饮了？」主子赐物须当面尽——你记得寿宴上玉嫔的笑，知道这茶未必干净。",
+  o:[{t:"谢恩接过，借袖掩去大半，事后命人查证",go:"n25"},{t:"谢恩后称「留着慢慢品」端走",end:"E_BAILE"},{t:"当场一饮而尽表决心",end:"E_POISON"}]},
+ n25:{v:2,where:"夜 · 下处",story:"贴身宫女莺儿近来鬼祟。你撞见她翻你妆奁，袖中藏着一封写给玉嫔的信——原来她早是玉嫔的人。",
+  o:[{t:"不动声色，将计就计喂她假消息",go:"n26"},{t:"私下盘问，晓以利害收为己用",end:"E_BAILE"},{t:"当面撕了信，冷声说「你既来了玉嫔的人，便留在这罢」",end:"E_BAILE"}]},
+ n26:{v:2,where:"午 · 太液池",story:"玉嫔「失足」跌入池中，岸边唯有你在，四下无人，她向你伸出手。你认得她——递糕的、放流言的、席尾笑的那个人。",
+  o:[{t:"高声呼救并伸手拉她，留个证人在场",go:"n27"},{t:"先去寻人施救，不近身",end:"E_BAILE"},{t:"「不小心」踩她手背一脚",end:"E_LINGCHI"}]},
+ n27:{v:2,r:"妃",where:"夜 · 慈宁宫",story:"靖妃倒台前夜，你被传来问话。太后问你可愿作证——这一句，定靖妃生死，也定你的前程。你想起太液池边拉过玉嫔的那只手，或许可作旁证。",
+  o:[{t:"如实作证，不添不减",go:"n28"},{t:"夸大其词，顺带踩靖妃一脚",end:"E_BAILE"},{t:"替靖妃遮掩，念旧日情分",end:"E_LENGGONG"}]},
+ n28:{v:2,where:"昼 · 本宫",story:"你晋了妃，开始掌部分宫务。下人们捧着你，也有人在暗处忌你——比如那个当年克你月例的管事，如今就在你手下当差。",
+  o:[{t:"公允，赏罚分明",go:"n29"},{t:"偏私，只用自己的心腹",end:"E_BAILE"},{t:"出错，把差事办砸了",end:"E_BAILE"}]},
+ n29:{v:2,where:"夜 · 下处",story:"嘉贵人暗中与你对峙，竟诬你私通外臣——你这才看清，继玉嫔之后，又一位把你当靶子的人。风声传到皇上耳里。",
+  o:[{t:"查明真相，从容自证",go:"n30"},{t:"忍，等风头过去",end:"E_BAILE"},{t:"先发制人，反咬嘉贵人私通外戚",end:"E_ZHAN"}]},
+ n30:{v:2,where:"昼 · 长信宫",story:"皇上南巡，命你留宫监国。你第一次握了这般权柄，想起当年那个因碎盏挨板子的粗使宫女，恍如隔世。",
+  o:[{t:"稳，按规矩行事",go:"n31"},{t:"专断，事事自己拍板",end:"E_BAILE"},{t:"逾制，用了唯有皇后才用的仪仗",end:"E_LENGGONG"}]},
+
+ // ===== 卷三 暗涌·妃→贵妃（n31–n40b）=====
+ n31:{v:3,where:"昼 · 回銮",story:"南巡归来，圣眷正浓。你从妃眼看再进一步，却也招来更深的忌恨——嘉贵人远远望着你的眼神，像极了当年玉嫔席尾那一笑。",
+  o:[{t:"谦，不露半分得意，只把恩宠当寻常",go:"n32"},{t:"骄，言语间压人一头，叫人知道谁得脸",end:"E_BAILE"},{t:"疏，刻意避开皇上，免得招人眼红",end:"E_LENGGONG"}]},
+ n32:{v:3,where:"昼 · 朝堂外",story:"朝臣议论立后之风，有人保你，有人劾你「出身低微、恐乱中宫」。御史的折子写得漂亮，字字占理——这一关，怎么接都像错。",
+  o:[{t:"上表谦辞，只称资历尚浅，静候圣裁",go:"n33"},{t:"当廷不卑不亢，亲自辩白，条条驳倒御史",end:"E_ZHAN"},{t:"请太后跟前的嬷嬷代为美言，曲线转圜",end:"E_LENGGONG"}]},
+ n33:{v:3,where:"夜 · 寝宫",story:"你又有了身孕。这一胎若成，便是皇子，你的地位将再不可撼动——也再不可触碰。当年头胎靖妃容你不得，如今嘉贵人更容你不得。这一胎怎么报、报给谁，字字都压着分量。",
+  o:[{t:"只报皇上与太后两人知道，其余秘而不宣",go:"n34"},{t:"依制报喜，六宫遍发喜帖，免得落人口实",end:"E_LOST"},{t:"身子重，宫务请嘉氏代为打理，她最熟规矩",end:"E_POISON"}]},
+ n34:{v:3,where:"夜 · 产房",story:"生产那夜，雷雨大作。稳婆是太后钦点的，太医候在帘外，产房里烛火被风压得一矮再矮。你攥着帕子，忽然想起当年那个因你升答应而红了眼的同屋宫女——这满宫，多少双眼睛盯着你这一胎。",
+  o:[{t:"静心由稳婆施为，她既太后钦点，自有分寸",end:"E_LOST"},{t:"传太医进产房候命，双保险，一有不对立刻施救",end:"E_LOST"},{t:"强撑精神，使眼色让芸儿寸步不离盯死稳婆的手",go:"n35"}]},
+ n35:{v:3,r:"贵妃",where:"昼 · 凤仪",story:"皇子满月那日，你晋了贵妃，离凤位只一步。镜中那人，已不是当年碎了玉盏、挨二十板子的粗使宫女——可你知道，高处风更利，每一步都得落在实处。",
+  o:[{t:"谦，依旧如履薄冰，差事只拣稳的办",go:"n36"},{t:"把要紧位置都换成自己人，六宫才算铁桶",end:"E_ZHAN"},{t:"御前直陈六宫积弊，句句属实，毫无保留",end:"E_LENGGONG"}]},
+ n36:{v:3,where:"昼 · 六宫",story:"你掌六宫事，批阅宫务。一份份陈情送到案前，字字都是人心。当年克你月例的管事，如今递帖子还要先掸三掸灰。赏罚之间，全是刀口。",
+  o:[{t:"赏罚只看规矩，公允一视同仁",go:"n37"},{t:"小事难得糊涂，大事按规矩，先安人心——这般宽纵，正好叫人钻了空子",end:"E_LENGGONG"},{t:"新官上任三把火，从严立威，谁的面子都不给",end:"E_BAILE"}]},
+ n37:{v:3,where:"夜 · 下处",story:"你夜里忽觉心悸，指腹发麻。安神香还是那味安神香，太医也还是那个太医——这毒下得安静，安静得像从来没有过。",
+  o:[{t:"立刻封了香炉留证，密召心腹彻查来路",go:"n38"},{t:"不声张，等明日请平安脉时一并告知太医",end:"E_POISON"},{t:"经此一吓看透了，心灰意冷，只求个清净",end:"E_NI"}]},
+ n38:{v:3,where:"昼 · 本宫",story:"你与嘉氏争一封号，六宫都看着谁更得脸。你记起她诬你私通外臣那一回，知道这回也容不得半分松懈。",
+  o:[{t:"退让三分，把功夫做在明处，不争口舌",go:"n39"},{t:"当面对峙，句句占上风，赢回这一口气",end:"E_BAILE"},{t:"枕边轻轻一句，让皇上自行削了嘉氏的位份",end:"E_LENGGONG"}]},
+ n39:{v:3,where:"昼 · 慈宁宫",story:"太后再次考你，这一次问得深：「若有一日圣意难测，你当如何？」你想起玉嫔、想起靖妃、想起一路替你递刀又递毒的人。这一题，答什么都像错。",
+  o:[{t:"「臣妾但守本分，静待天心。」",go:"n40"},{t:"「臣妾愿替太后分忧，代掌六宫琐事。」",end:"E_LENGGONG"},{t:"「圣意难测？那便看谁的手段更高明。」",end:"E_BAILE"}]},
+ n40:{v:3,where:"夜 · 冷苑",story:"余党再下毒，你险些丧命，幸被当年稳你头胎的心腹太医救回。毒后调养，你瘦了一圈——宫里嘴上最忠心的，这时候一个都靠不住。",
+  o:[{t:"闭门静养，外头的热闹一概不见",go:"n40b"},{t:"设一桌小宴请各宫过来，稳住人心，免得露出破绽",end:"E_POISON"},{t:"宁可错罚不可放过，把经手香案的人都处置了",end:"E_BAILE"}]},
+ n40b:{v:3,where:"昼 · 本宫",story:"毒案查清，靖妃旧部与嘉氏的眼线伏法。你再无明面上的对手，却也再无人敢近你——从碎盏的宫女到贵妃，你身边换了好几茬人。",
+  o:[{t:"沉静守成，等最后一局",go:"n41"},{t:"设宴庆功，遍请命妇，把这一仗的风光做足",end:"E_LENGGONG"},{t:"把当年欺你辱你的账，一笔一笔慢慢算回来",end:"E_BAILE"}]},
+
+ // ===== 卷四 凤位·皇贵妃→结局（n41–n49）=====
+ n41:{v:4,where:"昼 · 朝堂外",story:"南巡监国余波未平，朝臣弹劾你「专擅」。折子上的字一条条都占着理，你第一次站到风口浪尖——此刻进退，怎么走都像对的。",
+  o:[{t:"自省请罪，上疏把过错一条条认下来",go:"n42"},{t:"据理力争，逐条驳斥弹劾，自证清白",end:"E_LENGGONG"},{t:"联络朝中素来保你的旧臣，里应外合扭转风向",end:"E_ZHAN"}]},
+ n42:{v:4,where:"夜 · 慈宁宫",story:"立后前夕，太后亲自赐宴。酒是好酒，话是好话，可你想起靖妃当年摔杯的脾气——这一桌，怎么坐都像错。",
+  o:[{t:"谨守本分，只答所问，滴水不漏",go:"n43"},{t:"太后赐的是喜酒，饮满三盏，以全孝敬",end:"E_BAILE"},{t:"席间主动提起立后之事，表明心迹",end:"E_LENGGONG"}]},
+ n43:{v:4,where:"昼 · 书房",story:"皇子启蒙，你亲自教养。那孩子像极了皇上，也像极了你——你忽然懂了，当年碎盏挨板子换来的，是这个孩子的命。教养的分寸，比朝堂还难拿。",
+  o:[{t:"用心教，规矩立在前头，恩威并施",go:"n44"},{t:"教养交给嬷嬷，你只在一旁看着，不越俎代庖",end:"E_BAILE"},{t:"他要什么都给——这宫里刀刀见血，唯有他是真心的",end:"E_LENGGONG"}]},
+ n44:{v:4,where:"夜 · 下处",story:"嘉氏垂死反扑，诬你行巫蛊诅咒主子——和当年玉嫔放的那条流言，是同一个套路。这一回，证据竟似模似样。",
+  o:[{t:"查明自证，连根拔起",go:"n45"},{t:"忍，等皇上明察——巫蛊乃死罪，拖延便是坐实",end:"E_BAILE"},{t:"索性认了半句，换嘉氏也脱不了干系",end:"E_ZHAN"}]},
+ n45:{v:4,where:"昼 · 本宫",story:"巫蛊案了，你清白如初。镜中那人，眉宇间已是久居上位的从容——可你没忘，从芸儿翻家书那夜起，这宫里就没有过真正的安稳。",
+  o:[{t:"越发谨言慎行，把行迹收得更干净",go:"n46"},{t:"挺直腰杆，从今往后不必再看谁的脸色",end:"E_BAILE"},{t:"设宴小庆，把当年的苦水当趣事讲给大家听",end:"E_LENGGONG"}]},
+ n46:{v:4,where:"夜 · 凤仪",story:"最后一局。皇上问你，可愿与他并肩，共理这六宫？案上烛火，映着你与他两个影子——也映着这一路替你挡过毒、递过刀的人。",
+  o:[{t:"「臣妾愿与陛下共守，不敢言并肩，只言尽心。」",go:"n47"},{t:"「但凭陛下做主。」——立后之际示弱推诿，圣心失望",end:"E_LENGGONG"},{t:"「这后位，本就该是我的。」",end:"E_POISON"}]},
+ n47:{v:4,r:"皇贵妃",where:"昼 · 凤仪",story:"你封了皇贵妃，离凤位只一层纱。六宫跪迎，你扶起最前面那个——恍惚间像极了当年那个因你升答应而红了眼的同屋宫女。",
+  o:[{t:"待下宽和，赏罚照旧例，一步不越",go:"n48"},{t:"设宴受贺，风光做足，让六宫都看明白",end:"E_BAILE"},{t:"趁着大喜，请皇上把六宫位份一并抬举抬举",end:"E_LENGGONG"}]},
+ n48:{v:4,where:"夜 · 冷苑",story:"最后一支暗箭来了。你常饮的那盅参汤，今晚的色泽比往常深了半分——汤是皇上今早御赐的，端汤的小宫女低着头，一句话也不敢多说。",
+  o:[{t:"封汤留证，密召心腹太医与芸儿，连夜顺线查人",go:"n49"},{t:"御赐之物岂可轻掷？谢恩饮下，方全体统",end:"E_POISON"},{t:"这一路杀伐，你乏了——求一道度牒，换个清净",end:"E_NI"}]},
+ n49:{v:4,where:"夜 · 凤位",story:"尘埃落定。从储秀宫那个塞着娘家书、被芸儿翻包袱的秀女，到如今站在凤位前的你——这一路碎过盏、挨过板、挡过不知几回的毒。凤印就在案上，也或在你一心之外。",
+  o:[{t:"谦卑尽心，与陛下共守这宫",end:"E_TAIHOU"},{t:"但凭做主，做宠冠六宫的皇贵妃",end:"E_FEI"},
+     {t:"看破红尘，求一道度牒离去",end:"E_NI"},{t:"辞了恩宠，归乡平淡度日",end:"E_XIANG"},{t:"凤印空悬，天予不取反受其咎——伸手去拿",end:"E_POISON"}]}
+};
+
+const END={
+ E_JING:{type:"die",title:"沉 井",text:"你坏了宫里的规矩与默契。当夜，姑姑命人「请」你下去——井水幽深，再没有声息。你倒在了第 __N__ 步。"},
+ E_LAKE:{type:"die",title:"落 湖",text:"你失足跌入太液池，岸边无人相救。水漫过耳畔时，你才想起那句「这宫里最忌锋芒」。你倒在了第 __N__ 步。"},
+ E_BAILE:{type:"die",title:"白 绫",text:"一匹白绫，从梁上垂下。你犯了宫里最容不得的忌——或张扬，或蠢，或狠错了地方。你倒在了第 __N__ 步。"},
+ E_POISON:{type:"die",title:"毒 杀",text:"那一口，你以为是恩宠，其实是慢毒。夜半呕血，锦被染红。后宫里，死得最安静的，往往是最得意的。你倒在了第 __N__ 步。"},
+ E_LINGCHI:{type:"die",title:"凌 迟",text:"你以为除掉对家便高枕。岸上早有眼线看得真切——谋害嫔妃，十恶不赦。你倒在了第 __N__ 步，凌迟于市，以儆六宫。"},
+ E_LOST:{type:"die",title:"失 子",text:"这一胎终究没保住。血染锦被，一尸两命——这宫里能递到你和龙胎跟前的手，比你想的多得多。龙胎，从来是催命符。你倒在了第 __N__ 步。"},
+ E_TAO:{type:"die",title:"逃 宫",text:"你听故人之言谋出宫，却棋差一着被发觉。宫墙之高，插翅难逃。你倒在了第 __N__ 步，斩于午门。"},
+ E_ZHAN:{type:"die",title:"株 连",text:"你一步走错，被人诬陷谋逆。三司会审，株连下人。你倒在了第 __N__ 步，赐死抄家。"},
+ E_TAIHOU:{type:"life",title:"太后本太后",text:"你沉着缜密，懂得何时低头、何时出刀。靖妃倒台，六宫归一，凤印终于落入你手。镜头拉远，你端坐高位，淡淡一笑——这深深宫墙，终是你说了算。全剧终。"},
+ E_FEI:{type:"life",title:"宠冠六宫的皇贵妃",text:"你宠冠六宫，荣华无两。只是恩宠如朝露，他年圣心一移，或龙驭上宾，你便只能陪着这座空宫老去。烈火烹油，终是一叹。全剧终。"},
+ E_LENGGONG:{type:"life",title:"幽 冷 宫",text:"你一步走错，触了龙鳞。一道懿旨，移居冷宫。活着，却比死更寂——日影移墙，年年如此。这便是你的全剧终。"},
+ E_NI:{type:"life",title:"出 家 为 尼",text:"你辞了恩宠，求一道度牒。青灯古佛，晨钟暮鼓，倒比这朱墙里干净。半生浮华，至此归零。全剧终。"},
+ E_XIANG:{type:"life",title:"归 乡 平 民",text:"你辞了凤位，出宫嫁了寻常人家，生儿育女，再不闻宫中事。市井炊烟里，你偶尔想起那座城，淡淡一笑。全剧终。"}
+};
+
+// 每个节点的专属结局文案（键="节点:选项下标"；含 __N__ 会替换成当前步数；没有的键走 END 通用文案）
+const DTH={
+"n1:1":"进宫头一日就惦记家里？周姑姑笑了——这宫里最不缺念家的人。当夜井台边少了个人，没人多问一句。你倒在了第 __N__ 步。",
+"n1:2":"「我是来选妃的」——志向很响，响到传进了姑姑耳朵。井水很静，容不下这么大的口气。你倒在了第 __N__ 步。",
+"n2:1":"家书摊开了，你的底也摊开了——三日后，那封信出现在不该出现的桌上。白绫垂下来时，你还想着芸儿只是好奇。你倒在了第 __N__ 步。",
+"n2:2":"你凑过去一同看信，笑得比芸儿还甜。湖边夜风大，推你的那一下却很稳——看信的两个人，只有她会水。你倒在了第 __N__ 步。",
+"n3:1":"「谁有理帮谁」——好大的道理。这宫里讲理的地方叫慎刑司，进去的人都不太讲得出理了。你倒在了第 __N__ 步。",
+"n3:2":"「帮对我好的」——你把宫斗答成了交朋友。这话传出去当晚，对你『好』的和你不对付的，难得达成了一致。你倒在了第 __N__ 步。",
+"n4:1":"「是风大」——翊坤宫门窗关得严实，哪来的风？靖妃没恼，只是让人把你和那阵『风』一并料理了。你倒在了第 __N__ 步。",
+"n4:2":"你托相熟的姐姐说情。她替你求了，也记下了这笔人情；靖妃记下的，是有人敢替碎盏的宫女张目。你倒在了第 __N__ 步。",
+"n5:1":"这话主子自己说说罢了，你说出来，就是替她画了押。她容不下知道太多的人。你倒在了第 __N__ 步。",
+"n5:2":"滑头话在考官跟前管用，可这屋里坐的是主子——两边不站，就是两边都容不下。你倒在了第 __N__ 步。",
+"n6:1":"板痕未消就往仪仗跟前凑——在旁人眼里只有一个解释：攀附。当晚，有人替主子『清理』了不清净的人。你倒在了第 __N__ 步。",
+"n6:2":"你转身避去西廊，仪仗偏偏也走西廊。带着板痕的人跑起来格外显眼——宫里没有那么多西廊给你躲。你倒在了第 __N__ 步。",
+"n7:1":"理没评回来，倒是让管事知道了你会去哪告状。宫里的规矩很朴素：先出声的，先没。你倒在了第 __N__ 步。",
+"n7:2":"西角门确实松，松到专等人去钻。你摸到门边时，火把从四面亮起——宫墙比你想的高，逃宫是斩罪。你倒在了第 __N__ 步。",
+"n8:1":"你退得规规矩矩，规矩得连随侍太监都挑不出错——于是他换了个由头：御前重地，宫女窥视。你倒在了第 __N__ 步。",
+"n8:2":"你多看了那一眼，他也看了你一眼——坏就坏在，随侍太监把你那一眼也看在眼里。御前的人，容不得旁的眼睛。你倒在了第 __N__ 步。",
+"n9:1":"玉嫔在你背后收了笑：不给脸的东西。三日后你当差的水里，多了点别的东西。你倒在了第 __N__ 步。",
+"n9:2":"「比不得娘娘万分之一」——听着是捧，细品是刺：万分之一也是比了。玉嫔当日没发作，太液池替她记着。你倒在了第 __N__ 步。",
+"n10:1":"「是皇上抬爱」——抬爱谁？这话把靖妃的脸往哪儿搁？她当夜就让人给你上了最后一堂规矩课。你倒在了第 __N__ 步。",
+"n10:2":"她听着是谢，品着是警告：你记得她的好，也记得她的坏。封赏当夜，你的茶换了味道。你倒在了第 __N__ 步。",
+"n11:1":"规矩上可没写她今日要几分温。杯落地的脆响，就是主子给你的批语。你倒在了第 __N__ 步。",
+"n11:2":"主子没动的茶，奴婢先动了口——这一口喝出了你的胆，也喝出了你的限期。你倒在了第 __N__ 步。",
+"n12:1":"满座喝彩，也满座记恨。寿宴成了你的场子，主子的脸比那道咸羹还难看。你倒在了第 __N__ 步。",
+"n12:2":"菜换了，可『寿宴出岔』四个字也挂上了你的名字——哪怕是替膳房背的，背的人也得沉。你倒在了第 __N__ 步。",
+"n13:1":"「是主子恩典」——哪位主子的？这话一出口，靖妃和皇上你各得罪了一半。你倒在了第 __N__ 步。",
+"n13:2":"姐妹们的记性很好——好到联合起来把你『照顾』得很好。你倒在了第 __N__ 步。",
+"n14:1":"那管事跪得诚恳，转头就把你的话添油加醋递了上去。新人立威？他让你看看谁才是老人。你倒在了第 __N__ 步。",
+"n14:2":"旧账算清了，痛快极了。六宫也看明白了：这位记仇，且等不起——先下手为强的，从来不止你一个。你倒在了第 __N__ 步。",
+"n15:1":"你顺着话头句句熨帖——可皇上要的不是应声虫，第三回他没再来。失了圣心的答应，走得比谁都快。你倒在了第 __N__ 步。",
+"n15:2":"恩典还没出宫门，『恃宠替娘家讨赏』的闲话先到了——这样的话，够杀一个答应。你倒在了第 __N__ 步。",
+"n16:1":"点名是抬举，也是试。你称病告退——退了，就是不给脸。你前脚出殿，后脚『病』就重了。你倒在了第 __N__ 步。",
+"n16:2":"满殿哄笑里，皇上也在笑——笑完的人，转头就忘了你叫什么。无名无宠的答应，死起来最省事。你倒在了第 __N__ 步。",
+"n17:1":"你行礼行得太落落了——落落到有人学给玉嫔听：那位在御花园，眼睛都没低一低。你倒在了第 __N__ 步。",
+"n17:2":"你跌得很有分寸——分寸到皇上伸手扶了，也分寸到玉嫔的耳目都听说了。太液池的夜风，专挑会『跌』的人吹。你倒在了第 __N__ 步。",
+"n18:1":"「怕一个人冷清」——他要的是能共掌六宫的人，不是怕黑的孩子。那晚之后，绿头牌再没翻过你。失宠的人，走得很快。你倒在了第 __N__ 步。",
+"n18:2":"「不如先下手为强」——你说得坦荡，他听得心惊。枕边人是个未来的凶手，这还了得？你倒在了第 __N__ 步。",
+"n19:1":"于是太后成了全宫最后一个知道的人。有孕瞒着太后，这一条就够杀头，靖妃只是顺水推了舟。你倒在了第 __N__ 步。",
+"n19:2":"喜帖发得六宫皆知，贺礼堆成了山——盯上这座山的眼睛也堆成了山。头三月最忌张扬，你的胎没能熬过那些贺礼。你倒在了第 __N__ 步。",
+"n20:1":"她笑答『妹妹身子要紧』，转头就传遍了：她嫌本宫的糕不干净。这口锅扣下来，你连辩的地方都没有。你倒在了第 __N__ 步。",
+"n20:2":"糕本来就是干净的——你递回去的这一半，反倒成了『试探谋害』的实证。糕里没毒，你茶里有。你倒在了第 __N__ 步。",
+"n21:1":"你不出门，门外的故事就自己长：闭门不出？是在屋里画符。等你再开门，牢里的位置都替你留好了。你倒在了第 __N__ 步。",
+"n21:2":"「心虚的人才求神」——这话传得比流言还快。你慌着慌着，亲手给自己递了刀。你倒在了第 __N__ 步。",
+"n22:1":"答得忠心——可惜问话的是太后。在她跟前夸皇上信谁，就是站错了队。你倒在了第 __N__ 步。",
+"n22:2":"「手段最狠的人」——你当这是豪言，太后听是招供。这样的人不能留，也不好杀，那就关起来，慢慢地老。一道懿旨，日影移墙，年年如此。这便是你的全剧终。",
+"n23:1":"考核要的不是『不错』，是『出彩』——中人之姿，配不上那个『嫔』字。名册划掉你那一笔，比你想象中轻。你倒在了第 __N__ 步。",
+"n23:2":"礼数上漏了一处。考核册上没有『小节』二字——那一笔被朱笔圈了，圈的还有你的名字。你倒在了第 __N__ 步。",
+"n24:1":"主子赐的茶不当面尽，是不敬；端走了，回头茶里出了什么事，更是你的罪。主子要的，本来就是这个下场。你倒在了第 __N__ 步。",
+"n24:2":"「当场一饮而尽」表决心——决心是好的，命是自己的。玉嫔的糕没毒，靖妃的茶有；你敬的这一杯，敬到了黄泉路上。你倒在了第 __N__ 步。",
+"n25:1":"她哭着应了，转头就把『主子已知』报给了玉嫔——假消息还没用上，真刀先出鞘了。你倒在了第 __N__ 步。",
+"n25:2":"她走时带走的不止那封信——后来呈上来的『巫蛊证物』，正是从你妆奁里取的。你倒在了第 __N__ 步。",
+"n26:1":"人救上来了，她也记住了另一件事：她伸手的时候，你先转身了。这份账，她用你的命清了。你倒在了第 __N__ 步。",
+"n26:2":"岸上的芦苇丛里，蹲着的可不止你一个——谋害嫔妃，人证物证俱全。凌迟的刀，比你想象的钝。你倒在了第 __N__ 步。",
+"n27:1":"多添的那三分，经不起三司再问一遍——证词一翻，构陷的就是你。白绫垂下来时，你才懂『如实』两个字值多少。你倒在了第 __N__ 步。",
+"n27:2":"你替靖妃遮掩了。太后没治你的罪，只是淡淡看了你一眼——那一眼之后，你的宫门就再没真正开过。活着，却比死更寂。这便是你的全剧终。",
+"n28:1":"『任人唯私』四个字递上去时，联名画押的，正是你给的心腹——没有永远的自己人，只有永远的利益。你倒在了第 __N__ 步。",
+"n28:2":"你第一次掌事就砸了，砸的偏偏是皇上留意的那一件。他没罚你，只是再没把事交给你——失了用的妃子，比失宠更危险。你倒在了第 __N__ 步。",
+"n29:1":"风头是过去了——『坐实』也过去了。私通外臣这罪，越晚辩越像真的。你倒在了第 __N__ 步。",
+"n29:2":"你咬得太急，急到像狗急跳墙——你的『证据』成了你构陷的罪证，株连的名单上你的名字在最前面。你倒在了第 __N__ 步。",
+"n30:1":"你拍得又快又响——圣驾未归，宫里已有了『第二个主子』的风声。风声，比圣旨跑得快。你倒在了第 __N__ 步。",
+"n30:2":"那套仪仗确实好看，好看到只有皇后配用。你用的时候有多风光，进冷宫的时候就有多安静。这便是你的全剧终。",
+"n31:1":"你压了人一头——压的是嘉贵人，响的是满宫的耳朵。得宠还跋扈，这两样凑一块，就是催命符的正反两面。你倒在了第 __N__ 步。",
+"n31:2":"你刻意避着皇上——圣眷正浓时躲皇上，比失宠更犯忌，避出了『恃功自傲』的名声。懿旨下来那日，你连问一句的资格都没有。这便是你的全剧终。",
+"n32:1":"你驳得御史哑口无言——也把『后宫干政』四个字驳到了台面上。你赢了嘴，输了命：这样的人留在宫里，是祸。你倒在了第 __N__ 步。",
+"n32:2":"你托了太后跟前的嬷嬷。话递到了，把柄也留下了——『妃位私结内侍』，比任何弹劾都好用。冷宫的门，比你想的好进。这便是你的全剧终。",
+"n33:1":"六宫遍发喜帖，明面上是喜事，暗地里是悬赏——这一胎太金贵，金贵到人人都想试试它的斤两。你倒在了第 __N__ 步。",
+"n33:2":"羊把草交给狼看。她接得殷勤，管得尽心——只是你安神香的味道，从那天起就慢慢变了。你倒在了第 __N__ 步。",
+"n34:0":"你信了『太后钦点』四个字。稳婆的手很稳——稳稳地把剪子送偏了半寸。钦点的人最可靠，因为下手的人正是她。你倒在了第 __N__ 步。",
+"n34:1":"你传了太医进产房——坏了祖制。男太医止步帘外，帘内只剩稳婆的手。你为了求双保险，撤了唯一的保险。你倒在了第 __N__ 步。",
+"n35:1":"名单太长，长得像一份部署——递到御前时，比部署还像。你倒在了第 __N__ 步。",
+"n35:2":"句句属实——属实才可怕：积弊里有几分，是皇上的家事？直臣在朝堂是风骨，在后宫是找死。一道旨意，你去冷宫里慢慢做直臣。这便是你的全剧终。",
+"n36:1":"你难得了一回糊涂——克扣的、贪墨的、冒领的，全从你的『糊涂』里过了明路。六宫之主的糊涂叫失职，失了职的六宫之主，去冷宫里清闲。这便是你的全剧终。",
+"n36:2":"火烧得太旺，烧到了不该烧的人。人不多——但那几个，个个背后都站着人。这把火最后烧回了自己。你倒在了第 __N__ 步。",
+"n37:1":"你想着等明日的平安脉。可慢毒不等脉——它就着你的血走了一整夜。等太医赶到，脉象平稳得像从没毒过。你倒在了第 __N__ 步。",
+"n37:2":"你心灰了，真的灰了，当夜就上了求度牒的折子。青灯古佛确实干净——只是你走得太急，把查毒的路也一并放下了。半生浮华，输在『放下』两个字。",
+"n38:1":"你句句占上风，赢回了这口气——也把嘉氏逼上了绝路。绝路里的人不讲理，只讲刀。三日后，你的茶比她的封号先凉。你倒在了第 __N__ 步。",
+"n38:2":"你枕边那一句很轻，轻到皇上听了进去。可位份削下来的同一天，『贵妃谗言构陷』的折子也上去了——枕边风是干政，念你侍奉多年，改作移居冷宫。这便是你的全剧终。",
+"n39:1":"你愿替太后分忧，代掌六宫——可她还没老到需要人『代』。野心露得这么急，慈宁宫的门为你关上了。这便是你的全剧终。",
+"n39:2":"「看谁的手段更高明」——你当这是机锋，太后听是宣战。考题考的是藏，你答的是露。你倒在了第 __N__ 步。",
+"n40:1":"你把全宫的人聚到了一处——这一桌宴席，正好给下毒的人省了腿：一杯酒办得成的事，何必一炉一炉地熏？你倒在了第 __N__ 步。",
+"n40:2":"错杀的第三个人，是皇上乳母的远亲——这笔账，够把你算进『枉杀』里。你倒在了第 __N__ 步。",
+"n40b:1":"你把庆功宴办得风风光光——风光到皇上的眼睛眯了眯：毒案刚清就大宴命妇，这翅膀硬得有点快。一道旨意，你换了个清静地方反省。这便是你的全剧终。",
+"n40b:2":"第一笔很痛快，第二笔有人求情，第三笔——求情的人也记恨上了。算账算到人人都怕你，你的死期就排上了日程。你倒在了第 __N__ 步。",
+"n41:1":"你逐条驳斥，条条占理——理占尽了，情分就尽了。『后宫干政』这顶帽子，你驳得越漂亮，扣得越严实。龙颜一冷，冷宫相迎。这便是你的全剧终。",
+"n41:2":"里应外合之势成了——也被人看成了另一种势：内外勾结。会审的卷宗上，保过你的旧臣成了你的『同党』。你倒在了第 __N__ 步。",
+"n42:1":"第三盏下肚，你的舌头大了一号——醉后失言的那一句，被人一字不差记了下来。太后赐的酒，醉死人不必偿命。你倒在了第 __N__ 步。",
+"n42:2":"你主动提了立后——这事皇上没开口，太后没点头，怎么轮得到你急？僭越两个字落在纸面上，比你想象的沉。这便是你的全剧终。",
+"n43:1":"亲娘不管，太后看在眼里，记住的却是一件事：连皇嗣都肯放手的母亲，什么都肯放手。你倒在了第 __N__ 步。",
+"n43:2":"他要什么你给什么。九岁那年他把伴读推下台阶，你替他遮了；再往后他要的东西，你遮不住了。纵出来的祸，母仪跟着偿。这便是你的全剧终。",
+"n44:1":"明察需要时日，构陷不需要——第三天，你宫里『搜』出了人偶。『等』字等不来清白，只等来白绫。你倒在了第 __N__ 步。",
+"n44:2":"半句认罪就是认罪——你的『反咬』成了狗急跳墙的实证。株连的旨意下来，半个宫都跟着哑了。你倒在了第 __N__ 步。",
+"n45:1":"从巫蛊案里活着出来的人，腰杆不该挺得这么快——挺得太直，就成了新靶子。你倒在了第 __N__ 步。",
+"n45:2":"讲者当趣事，听者当话柄——『原来她当年受过程家的毒』绕了一圈，绕成了你对圣上的怨。失言的人，去冷宫里慢慢学闭嘴。这便是你的全剧终。",
+"n46:1":"「但凭陛下做主」——立后是国本，他问你，是要一个扛得住的人，不是一个会推的人。你这一推，推掉了试探，也推掉了自己。这便是你的全剧终。",
+"n46:2":"「这后位本就该是我的」——僭越的话谁都可以想，只有你不能说。你没等到册封礼，先等到了那杯茶。你倒在了第 __N__ 步。",
+"n47:1":"凤位未定，先做足了凤仪——在皇上看，是逼宫；在旁人看，是破绽。风光最养眼，也最养刀。你倒在了第 __N__ 步。",
+"n47:2":"你趁着大喜替六宫讨位份——赏罚是皇上的权柄，你讨的不是人情，是越权。冷宫的门槛不高，就是来得这么快。这便是你的全剧终。",
+"n48:1":"下毒的人赌的就是你不敢疑御赐之物。体统全了，命没了——那半分色差，才是真圣旨。你倒在了第 __N__ 步。",
+"n48:2":"你乏了，求了度牒。青灯古佛是清净——只是你离凤位只剩一步，这一步让给了暗处的人。半生浮华，终是差了最后一口气。",
+"n49:4":"凤印入手那一瞬，殿外传旨的太监也到了——圣旨里没有册封，只有一杯酒。天予不取反受其咎；可你伸手的时候，天也看着呢。你倒在了第 __N__ 步。"
+};
+
+let step=0,prevV=0,volStart="n1",volStep=1,pending="n1",rank="秀女";
+const $=id=>document.getElementById(id);
+const cover=$("cover"),chapter=$("chapter"),scene=$("scene"),end=$("end");
+const SAVE_KEY="hgsl_save_v1";
+function save(st){try{st.step=step;st.prevV=prevV;st.volStart=volStart;st.volStep=volStep;st.pending=pending;st.rank=rank;localStorage.setItem(SAVE_KEY,JSON.stringify(st));}catch(e){}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function restore(){let s=null;try{s=JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){}
+  if(!s||s.screen==="cover")return;
+  step=s.step;prevV=s.prevV;volStart=s.volStart;volStep=s.volStep;pending=s.pending;rank=s.rank;
+  $("rank").textContent="位分："+rank;updateEp();renderDots();
+  if(s.screen==="scene")paintScene(s.node);
+  else if(s.screen==="chapter")showChapter(s.node);
+  else if(s.screen==="end")showEnd(s.endId,s.key);}
+function show(e){e.classList.remove("hide");} function hide(e){e.classList.add("hide");}
+function renderDots(){const d=$("dots");d.innerHTML="";VOLS.forEach((_,k)=>{if(k<1)return;const i=document.createElement("i");if(k<=prevV)i.className="on";d.appendChild(i);});}
+function updateEp(){const total=Object.keys(NODES).length;$("ep").textContent=`第 ${step} 步 / 共 ${total} 幕`;$("bar").style.width=(step/total*100)+"%";}
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1900);}
+function go(id){
+  const n=NODES[id];
+  if(n.v!==prevV){ prevV=n.v; volStart=id; volStep=step+1; pending=id; showChapter(id); return; }
+  step++; updateEp(); renderDots(); paintScene(id);
+}
+function showChapter(id){const n=NODES[id];const v=VOLS[n.v];
+  $("cVol").textContent=v[0];$("cTitle").textContent=v[1];$("cIntro").textContent=v[2];
+  hide(scene);hide(end);show(chapter);renderDots();save({screen:"chapter",node:id});}
+function paintScene(id){const n=NODES[id];
+  if(n.r&&n.r!==rank){rank=n.r;toast("晋 位 · "+rank);}
+  $("rank").textContent="位分："+rank;
+  const v=VOLS[n.v];$("where").textContent=`${v[0]} · ${n.where}`;$("story").textContent=n.story;
+  const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  const box=$("opts");box.innerHTML="";shuf(n.o.map((op,i)=>({op,i}))).forEach(({op,i})=>{const b=document.createElement("button");b.className="opt";b.textContent=op.t;
+    b.onclick=()=>op.end?showEnd(op.end,id+":"+i):go(op.go);box.appendChild(b);});
+  hide(chapter);hide(end);show(scene);window.scrollTo(0,0);
+  save({screen:"scene",node:id});}
+function showEnd(id,key){const e=END[id];const txt=((key&&DTH[key])||e.text).replace("__N__",step);
+  end.className="end "+e.type;$("endTag").textContent=e.type==="die"?"大 结 局":"结 局";
+  $("endBig").textContent=e.title;$("endReason").textContent=txt;
+  $("endShare").textContent=e.type==="die"?`📌 你只活到了第 ${step} 步…截个图，看看朋友能走几步～`:`📌 你走到了第 ${step} 步，结局「${e.title}」～截个图炫耀！`;
+  hide(scene);hide(chapter);show(end);window.scrollTo(0,0);save({screen:"end",endId:id,key:key});}
+
+$("startBtn").onclick=()=>{clearSave();step=0;prevV=0;volStart="n1";volStep=1;rank="秀女";$("rank").textContent="位分：秀女";hide(cover);go("n1");};
+$("cGo").onclick=()=>{go(pending);};
+$("againBtn").onclick=()=>{clearSave();step=0;prevV=0;volStart="n1";volStep=1;rank="秀女";$("rank").textContent="位分：秀女";hide(end);hide(chapter);show(cover);};
+$("rechBtn").onclick=()=>{step=volStep-1;go(volStart);};
+
+// 本地售卖版：无口令锁，直接进入
+restore();
+</script>
+</body>
+</html>
